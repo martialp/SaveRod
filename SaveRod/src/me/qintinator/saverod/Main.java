@@ -1,5 +1,8 @@
 package me.qintinator.saverod;
 
+import me.qintinator.saverod.contracts.IConfigPropertyService;
+import me.qintinator.saverod.contracts.ISaverodService;
+import me.qintinator.saverod.eventlisteners.OnEntityPickupItem;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -16,18 +19,21 @@ public class Main extends JavaPlugin{
 	public void onEnable() {
 			
 		saveDefaultConfig();
-		
+		ISaverodService saveRodService = Bootstrapper.getSaverodService();
+
 		// running the bootstrapper
 		Bootstrapper.run();
-				
+
 		// running the property mapper
 		ConfigPropertyMapper.run(this);
-		
+
 		// loading the commands
-		Bukkit.getPluginCommand("rod").setExecutor(new RodCommand(Bootstrapper.getSaverodService()));
+		Bukkit.getPluginCommand("rod").setExecutor(new RodCommand(saveRodService));
 		Bukkit.getPluginCommand("saverod").setExecutor(new SaveRodCommand(this));
 		
 		// loading all events
-		Bukkit.getPluginManager().registerEvents(new OnPlayerDeath(Bootstrapper.getSaverodService(), Bootstrapper.getConfigPropertyService()), this);
-	}	
+		IConfigPropertyService configPropertyService = Bootstrapper.getConfigPropertyService();
+		Bukkit.getPluginManager().registerEvents(new OnPlayerDeath(saveRodService, configPropertyService), this);
+		Bukkit.getPluginManager().registerEvents(new OnEntityPickupItem(saveRodService), this);
+	}
 }
